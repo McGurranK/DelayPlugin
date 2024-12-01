@@ -3,6 +3,38 @@
 
 #include <JuceHeader.h>
 
+
+// Todo : Unit test
+class DCBlocker final
+{
+public:
+    DCBlocker () = default;
+    
+    void process (juce::AudioBuffer<float>& AudioBufferRef)
+    {
+        const auto numberOfChannels = AudioBufferRef.getNumChannels();
+        const auto numberOfSamples = AudioBufferRef.getNumSamples();
+        
+        for (int channelIndex = 0; channelIndex < numberOfChannels; channelIndex++)
+        {
+            const auto channelPointer = AudioBufferRef.getWritePointer (channelIndex);
+            
+            for (int sampleIndex = 0; sampleIndex < numberOfSamples; sampleIndex++)
+            {
+                auto currentInput = channelPointer[sampleIndex];
+                channelPointer[sampleIndex] = currentInput - previousInputSample + (r * previousOutputSample);
+                previousInputSample = currentInput;
+                previousInputSample = channelPointer[sampleIndex];
+            }
+        }
+    }
+    
+    float previousInputSample { 0.f };
+    float previousOutputSample { 0.f };
+    float r { 0.955f };
+};
+
+
 class DelayPluginAudioProcessor : public juce::AudioProcessor
 {
 public:
