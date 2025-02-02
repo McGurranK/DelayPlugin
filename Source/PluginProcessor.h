@@ -3,6 +3,30 @@
 
 #include <JuceHeader.h>
 
+template <class SampleType>
+class ScopedReplacingContextMixer final
+{
+public:
+    explicit ScopedReplacingContextMixer (juce::AudioBuffer<SampleType>& OutputBufferRef, juce::dsp::DryWetMixer<SampleType>& MixerRef)
+        : outputBuffer (OutputBufferRef)
+        , mixerDSPRef (MixerRef)
+    {
+        juce::dsp::AudioBlock<SampleType> inputBlock { outputBuffer };
+        mixerDSPRef.pushDrySamples (inputBlock);
+    }
+    
+    ~ScopedReplacingContextMixer()
+    {
+        juce::dsp::AudioBlock<SampleType> outputBlock { outputBuffer };
+        mixerDSPRef.mixWetSamples (outputBlock);
+    }
+    
+private:
+    juce::AudioBuffer<SampleType>& outputBuffer;
+    juce::dsp::DryWetMixer<SampleType>& mixerDSPRef;
+};
+
+
 struct ParametersStucture
 {
     ParametersStucture (juce::AudioProcessor& ProcesorRef)
@@ -57,6 +81,7 @@ public:
 private:
     juce::dsp::DryWetMixer<float> mixer;
     juce::dsp::DelayLine<float> delayLine;
+    
     juce::SmoothedValue<float> delayTimeSmoothing;
     juce::SmoothedValue<float> gainSmoothing;
     

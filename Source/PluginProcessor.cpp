@@ -115,7 +115,7 @@ void DelayPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     mixer.setWetMixProportion (params.mix->getValue());
 
     {
-        mixer.pushDrySamples (buffer);
+        ScopedReplacingContextMixer<float> scopedMixing (buffer, mixer);
         
         for (int channelIndex = 0; channelIndex < totalNumInputChannels; channelIndex++)
         {
@@ -128,11 +128,10 @@ void DelayPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
                 auto delayTime = delayRange.convertFrom0to1 (delayTimeSmoothing.getNextValue());
                 
                 samplePointer += (delayLine.popSample (channelIndex, delayTime) * gainSmoothing.getNextValue());
-                delayLine.pushSample ((channelIndex > 0) ? 0 : 1, samplePointer);
+                delayLine.pushSample (channelIndex, samplePointer);
             }
         }
         
-        mixer.mixWetSamples (buffer);
     }
 }
 
