@@ -3,6 +3,49 @@
 
 #include <JuceHeader.h>
 
+template <class SampleType>
+class ScopedReplacingContextMixer final
+{
+public:
+    explicit ScopedReplacingContextMixer (juce::AudioBuffer<SampleType>& OutputBufferRef, juce::dsp::DryWetMixer<SampleType>& MixerRef)
+        : outputBuffer (OutputBufferRef)
+        , mixerDSPRef (MixerRef)
+    {
+        juce::dsp::AudioBlock<SampleType> inputBlock { outputBuffer };
+        mixerDSPRef.pushDrySamples (inputBlock);
+    }
+    
+    ~ScopedReplacingContextMixer()
+    {
+        juce::dsp::AudioBlock<SampleType> outputBlock { outputBuffer };
+        mixerDSPRef.mixWetSamples (outputBlock);
+    }
+    
+private:
+    juce::AudioBuffer<SampleType>& outputBuffer;
+    juce::dsp::DryWetMixer<SampleType>& mixerDSPRef;
+};
+
+
+struct ParametersStucture
+{
+    ParametersStucture (juce::AudioProcessor& ProcesorRef)
+    {
+        delayTime = new juce::AudioParameterFloat("DT", "Delay Time", juce::NormalisableRange<float> (1.f, 48000.f), 2000.f);
+        delayFeedback = new juce::AudioParameterFloat("FB", "Delay Feedback", juce::NormalisableRange<float> (0.f, 1.f), 0.5f);
+        mix = new juce::AudioParameterFloat("mix", "Wet & Dry Mix", juce::NormalisableRange<float> (0.f, 1.f), 0.5f);
+        
+        ProcesorRef.addParameter (delayTime);
+        ProcesorRef.addParameter (delayFeedback);
+        ProcesorRef.addParameter (mix);
+    }
+    
+    juce::RangedAudioParameter* delayTime;
+    juce::RangedAudioParameter* delayFeedback;
+    juce::RangedAudioParameter* mix;
+};
+
+
 class DelayPluginAudioProcessor : public juce::AudioProcessor
 {
 public:
@@ -36,15 +79,13 @@ public:
 	void setStateInformation(const void* data, int sizeInBytes) override;
 
 private:
+    juce::dsp::DryWetMixer<float> mixer;
+    juce::dsp::DelayLine<float> delayLine;
     
-	std::vector<float>	mDelayBufferLeft { 1024, 0 };
-	std::vector<float>	mDelayBufferRight { 1024, 0 };
-	
-	int mWritePosition{ 0 }, mReadPosition{ 0 }, mDelayBufferSize{ 0 }, mFeedbackIndex{ 0 };
-
-	float mDelayTime{0.5};
-	float outputLeft{ 0 };
-	float outputRight{ 0 };
-
+    juce::SmoothedValue<float> delayTimeSmoothing;
+    juce::SmoothedValue<float> gainSmoothing;
+    
+    ParametersStucture params;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DelayPluginAudioProcessor)
 };						  

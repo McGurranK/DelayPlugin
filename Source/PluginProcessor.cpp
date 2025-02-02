@@ -1,17 +1,15 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-//==============================================================================
 DelayPluginAudioProcessor::DelayPluginAudioProcessor()
      : AudioProcessor (BusesProperties().withInput  ("Input", juce::AudioChannelSet::stereo(), true).withOutput ("Output", juce::AudioChannelSet::stereo(), true))
+     , params (*this)
 {
+
 }
 
 DelayPluginAudioProcessor::~DelayPluginAudioProcessor()
 {
-
-	mDelayBufferLeft.clear();
-	mDelayBufferRight.clear();
 }
 
 const juce::String DelayPluginAudioProcessor::getName() const
@@ -62,13 +60,27 @@ void DelayPluginAudioProcessor::changeProgramName (int index, const juce::String
 {
 }
 
-//==============================================================================
 void DelayPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-	mDelayBufferSize = (mDelayTime*sampleRate)*2;
-	
-	mDelayBufferLeft.resize(mDelayBufferSize);
-	mDelayBufferRight.resize(mDelayBufferSize);
+    juce::dsp::ProcessSpec spec;
+    spec.maximumBlockSize = samplesPerBlock;
+    spec.sampleRate = sampleRate;
+    spec.numChannels = getTotalNumInputChannels();
+    
+    delayLine.prepare (spec);
+    mixer.prepare (spec);
+    
+    mixer.setMixingRule(juce::dsp::DryWetMixingRule::balanced);
+    mixer.setWetMixProportion(0.5f);
+    
+    delayLine.setMaximumDelayInSamples (sampleRate * 4);
+    delayLine.setDelay (1000);
+    
+    delayTimeSmoothing.setCurrentAndTargetValue (0.f);
+    delayTimeSmoothing.reset (sampleRate, 0.1);
+
+    gainSmoothing.setCurrentAndTargetValue (0.4f);
+    gainSmoothing.reset (sampleRate, 0.1);
 }
 
 void DelayPluginAudioProcessor::releaseResources()
@@ -92,94 +104,50 @@ bool DelayPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
 void DelayPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
+    
     auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
+    
+    auto delayRange = params.delayTime->getNormalisableRange();
+    
+    delayTimeSmoothing.setTargetValue (params.delayTime->getValue());
+    gainSmoothing.setTargetValue (params.delayFeedback->getValue());
+    
+    mixer.setWetMixProportion (params.mix->getValue());
 
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
-
-		// Incoming samples
-
-		auto *channelDataLeft = buffer.getWritePointer(0);
-		auto *channelDataRight = buffer.getWritePointer(1);
-		
-		// interate through each sample
-		for (auto sample = 0; sample < buffer.getNumSamples(); ++sample)
-		{			
-			// Feedback Parameter
-			mFeedbackIndex = mWritePosition - (mDelayBufferSize / 2);
-			if (mFeedbackIndex < 0) 
-			{
-				mFeedbackIndex = mDelayBufferSize + mFeedbackIndex;
-			}
-			
-			if (mFeedbackIndex > mDelayBufferSize) 
-			{
-				mFeedbackIndex = 0;
-			}
-
-			channelDataLeft[sample] += (mDelayBufferLeft[mFeedbackIndex])*0.5;
-			channelDataRight[sample] += (mDelayBufferRight[mFeedbackIndex])*0.5;
-
-			// If the write position is less than the delay bufferSize
-			// Set the data at this position in the incoming channel data
-			if (mWritePosition < mDelayBufferSize)
-			{
-
-				mDelayBufferLeft[mWritePosition] = channelDataLeft[sample];
-				mDelayBufferRight[mWritePosition] = channelDataRight[sample];
-
-
-			}
-			// Else if the write position is greater than or equal to the delay buffer size
-			// Reset the write position to Zero and write the sample into this position
-			else if (mWritePosition >= mDelayBufferSize)
-			{
-				mWritePosition = 0;
-				mDelayBufferLeft[mWritePosition] = channelDataLeft[sample];
-				mDelayBufferRight[mWritePosition] = channelDataRight[sample];
-			}
-
-			// Readposition is the the write position divided by two
-			// Done this way to leave extra space
-			mReadPosition = mWritePosition - (mDelayBufferSize / 2);
-
-
-			// If the read position is less than zero it will be a minus value
-			// So to wrap the index around add this to the buffer size
-			if (mReadPosition < 0)
-			{
-				mReadPosition = mDelayBufferSize + mReadPosition;
-			}
-			
-			//
-			if (mReadPosition > mDelayBufferSize)
-			{
-				mReadPosition = 0;
-
-			}				
-
-			// Writing data to the left and write channels
-			channelDataLeft[sample] += mDelayBufferLeft[mReadPosition];
-			channelDataRight[sample] += mDelayBufferRight[mReadPosition];
-
-
-		// Iterate write and read position
-		mWritePosition++;
-		mReadPosition++;
-}
+    {
+        ScopedReplacingContextMixer<float> scopedMixing (buffer, mixer);
+        
+        for (int channelIndex = 0; channelIndex < totalNumInputChannels; channelIndex++)
+        {
+            auto channelPointer = buffer.getWritePointer (channelIndex);
+            
+            for (int sampleIndex = 0; sampleIndex < buffer.getNumSamples(); sampleIndex++)
+            {
+                auto& samplePointer = channelPointer [sampleIndex];
+                auto tempInput = samplePointer;
+                
+                auto delayTime = delayRange.convertFrom0to1 (delayTimeSmoothing.getNextValue());
+                
+                samplePointer = (delayLine.popSample (channelIndex, delayTime) * gainSmoothing.getNextValue());
+                
+                tempInput += samplePointer;
+                
+                delayLine.pushSample (channelIndex, tempInput);
+            }
+        }
+        
+    }
 }
 
 bool DelayPluginAudioProcessor::hasEditor() const
 {
-    return false; // (change this to false if you choose to not supply an editor)
+    return false;
 }
 
 juce::AudioProcessorEditor* DelayPluginAudioProcessor::createEditor()
 {
     return new DelayPluginAudioProcessorEditor (*this);
 }
-
 
 void DelayPluginAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
