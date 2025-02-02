@@ -124,11 +124,15 @@ void DelayPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
             for (int sampleIndex = 0; sampleIndex < buffer.getNumSamples(); sampleIndex++)
             {
                 auto& samplePointer = channelPointer [sampleIndex];
+                auto tempInput = samplePointer;
                 
                 auto delayTime = delayRange.convertFrom0to1 (delayTimeSmoothing.getNextValue());
                 
-                samplePointer += (delayLine.popSample (channelIndex, delayTime) * gainSmoothing.getNextValue());
-                delayLine.pushSample (channelIndex, samplePointer);
+                samplePointer = (delayLine.popSample (channelIndex, delayTime) * gainSmoothing.getNextValue());
+                
+                tempInput += samplePointer;
+                
+                delayLine.pushSample (channelIndex, tempInput);
             }
         }
         
