@@ -141,7 +141,7 @@ void DelayPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
 
 bool DelayPluginAudioProcessor::hasEditor() const
 {
-    return false;
+    return true;
 }
 
 juce::AudioProcessorEditor* DelayPluginAudioProcessor::createEditor()

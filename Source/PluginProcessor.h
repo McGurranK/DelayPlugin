@@ -78,14 +78,14 @@ public:
 	void getStateInformation(juce::MemoryBlock& destData) override;
 	void setStateInformation(const void* data, int sizeInBytes) override;
 
+    ParametersStucture params;
+    
 private:
     juce::dsp::DryWetMixer<float> mixer;
     juce::dsp::DelayLine<float> delayLine;
     
     juce::SmoothedValue<float> delayTimeSmoothing;
     juce::SmoothedValue<float> gainSmoothing;
-    
-    ParametersStucture params;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DelayPluginAudioProcessor)
 };						  
