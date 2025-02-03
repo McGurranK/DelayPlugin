@@ -17,9 +17,9 @@ public:
     void resized() override;
 
 private:
-    juce::Slider delayTime;
-    juce::Slider delayFeedback;
-    juce::Slider mix;
+    juce::Slider delayTime { juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag, juce::Slider::NoTextBox };
+    juce::Slider delayFeedback { juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag, juce::Slider::NoTextBox };
+    juce::Slider mix { juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag, juce::Slider::NoTextBox };
     
     juce::SliderParameterAttachment delayTimeAttachment;
     juce::SliderParameterAttachment delayFeedbackAttachment;
