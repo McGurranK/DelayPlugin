@@ -155,10 +155,43 @@ juce::AudioProcessorEditor* DelayPluginAudioProcessor::createEditor()
 
 void DelayPluginAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
+    juce::XmlElement stateXML ("Parameters");
+    
+    for (auto& parameter : { params.delayTime, params.delayFeedback, params.mix})
+    {
+        const auto parameterName = parameter->paramID;
+        auto parameterValue = parameter->getValue();
+        const auto range = parameter->getNormalisableRange();
+        parameterValue = range.convertFrom0to1 (parameterValue);
+        
+        const auto parameterValueString = juce::String(parameterValue);
+        
+        auto state = stateXML.createNewChildElement(parameterName);
+        state->setAttribute ("Value" , parameterValueString);
+    }
+    
+    copyXmlToBinary (stateXML, destData);
 }
 
 void DelayPluginAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
+    const auto xmlElement = getXmlFromBinary (data, sizeInBytes);
+        
+    if (xmlElement.get())
+    {
+        auto parameter = xmlElement->getFirstChildElement();
+        auto str = "Value";
+        
+        while (parameter != nullptr)
+        {
+            const auto parameterName = parameter->getTagName();
+            const auto parameterText = parameter->getStringAttribute (str);
+            
+            // Check name for parameters & set value
+            
+            parameter = parameter->getNextElement();
+        }
+    }
 }
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
