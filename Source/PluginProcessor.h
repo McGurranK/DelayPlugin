@@ -2,6 +2,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "FifoGUIBuffer.h"
 
 template <class SampleType>
 class ScopedReplacingContextMixer final
@@ -78,14 +79,17 @@ public:
 	void getStateInformation(juce::MemoryBlock& destData) override;
 	void setStateInformation(const void* data, int sizeInBytes) override;
 
+    ParametersStucture params;
+    
+    FifoBuffer dryFifo;
+    FifoBuffer wetFifo;
+    
 private:
     juce::dsp::DryWetMixer<float> mixer;
     juce::dsp::DelayLine<float> delayLine;
     
     juce::SmoothedValue<float> delayTimeSmoothing;
     juce::SmoothedValue<float> gainSmoothing;
-    
-    ParametersStucture params;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DelayPluginAudioProcessor)
 };						  

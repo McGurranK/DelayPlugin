@@ -4,6 +4,8 @@
 DelayPluginAudioProcessor::DelayPluginAudioProcessor()
      : AudioProcessor (BusesProperties().withInput  ("Input", juce::AudioChannelSet::stereo(), true).withOutput ("Output", juce::AudioChannelSet::stereo(), true))
      , params (*this)
+     , dryFifo (4096, 2)
+     , wetFifo (4096, 2)
 {
 
 }
@@ -112,6 +114,8 @@ void DelayPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     delayTimeSmoothing.setTargetValue (params.delayTime->getValue());
     gainSmoothing.setTargetValue (params.delayFeedback->getValue());
     
+    dryFifo.addToFifo (buffer);
+    
     mixer.setWetMixProportion (params.mix->getValue());
 
     {
@@ -136,12 +140,13 @@ void DelayPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
             }
         }
         
+        wetFifo.addToFifo (buffer);
     }
 }
 
 bool DelayPluginAudioProcessor::hasEditor() const
 {
-    return false;
+    return true;
 }
 
 juce::AudioProcessorEditor* DelayPluginAudioProcessor::createEditor()

@@ -1,40 +1,59 @@
 /*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin editor.
-
-  ==============================================================================
+ * PluginEditor.cpp
 */
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-//==============================================================================
 DelayPluginAudioProcessorEditor::DelayPluginAudioProcessorEditor (DelayPluginAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+    : AudioProcessorEditor (&p)
+    , graphView (*p.params.mix, p.dryFifo, p.wetFifo)
+    , delayTimeAttachment (*p.params.delayTime, delayTime)
+    , delayFeedbackAttachment (*p.params.delayFeedback, delayFeedback)
+    , mixAttachment (*p.params.mix, mix)
+    , audioProcessor (p)
 {
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
+    addAndMakeVisible (graphView);
+    
+    addAndMakeVisible (delayTime);
+    addAndMakeVisible (delayFeedback);
+    addAndMakeVisible (mix);
+    
     setSize (400, 300);
 }
 
-DelayPluginAudioProcessorEditor::~DelayPluginAudioProcessorEditor()
+void DelayPluginAudioProcessorEditor::paint (juce::Graphics& Graphics)
 {
-}
-
-//==============================================================================
-void DelayPluginAudioProcessorEditor::paint (juce::Graphics& g)
-{
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-
-    g.setColour (juce::Colours::white);
-    g.setFont (15.0f);
-    g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
+    const auto width = getWidth() - 10;
+    const auto height = getHeight() - 10;
+    
+    Graphics.fillAll (juce::Colours::black);
+    
+    auto mainBounds = getLocalBounds().toFloat().withSizeKeepingCentre (width, height);
+    
+    
+    Graphics.setColour (juce::Colours::blue);
+    Graphics.fillRoundedRectangle (mainBounds, 10.f);
+    
+    Graphics.setColour (juce::Colours::black);
+    Graphics.fillRoundedRectangle (mainBounds.removeFromTop (mainBounds.getHeight() * 0.5).reduced (5, 5), 10.f);
+    
 }
 
 void DelayPluginAudioProcessorEditor::resized()
 {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
+    const auto width = getWidth() - 10;
+    const auto height = getHeight() - 10;
+
+    auto bounds = getBounds().removeFromBottom (getHeight() * 0.5f);
+    auto sliderWidth = getWidth() / 3;
+    
+    delayTime.setBounds (bounds.removeFromLeft (sliderWidth));
+    delayFeedback.setBounds (bounds.removeFromLeft (sliderWidth));
+    mix.setBounds (bounds);
+    
+    auto mainBounds = getLocalBounds().toFloat().withSizeKeepingCentre (width, height);
+    mainBounds =  mainBounds.removeFromTop (mainBounds.getHeight() * 0.5).reduced(5.f, 5.f);
+    
+    graphView.setBounds (mainBounds.toNearestInt());
 }
