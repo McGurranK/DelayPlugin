@@ -2,6 +2,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "FifoGUIBuffer.h"
 
 template <class SampleType>
 class ScopedReplacingContextMixer final
@@ -79,6 +80,9 @@ public:
 	void setStateInformation(const void* data, int sizeInBytes) override;
 
     ParametersStucture params;
+    
+    FifoBuffer dryFifo;
+    FifoBuffer wetFifo;
     
 private:
     juce::dsp::DryWetMixer<float> mixer;

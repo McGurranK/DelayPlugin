@@ -11,6 +11,9 @@
       <FILE id="gkatIQ" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="trscsi" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+      <FILE id="vbOnkI" name="FifoGUIBuffer.cpp" compile="1" resource="0"
+            file="Source/FifoGUIBuffer.cpp"/>
+      <FILE id="ylSipO" name="FifoGUIBuffer.h" compile="0" resource="0" file="Source/FifoGUIBuffer.h"/>
     </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
