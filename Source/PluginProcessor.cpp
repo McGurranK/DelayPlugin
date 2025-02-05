@@ -7,7 +7,6 @@ DelayPluginAudioProcessor::DelayPluginAudioProcessor()
      , dryFifo (4096, 2)
      , wetFifo (4096, 2)
 {
-
 }
 
 DelayPluginAudioProcessor::~DelayPluginAudioProcessor()

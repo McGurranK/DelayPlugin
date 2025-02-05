@@ -3,6 +3,16 @@
 <JUCERPROJECT id="r5x4pe" name="DelayPlugin" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
   <MAINGROUP id="qnuy71" name="DelayPlugin">
+    <GROUP id="{E7030B68-C05C-873E-F52B-382AAC9DFE16}" name="GUI">
+      <FILE id="ZVBsjo" name="ScrollingWaveform.cpp" compile="1" resource="0"
+            file="Source/ScrollingWaveform.cpp"/>
+      <FILE id="OQ7OAW" name="ScrollingWaveform.h" compile="0" resource="0"
+            file="Source/ScrollingWaveform.h"/>
+    </GROUP>
+    <GROUP id="{BB8F561F-8A30-C23B-C7B2-963E8CDD1001}" name="DSP">
+      <FILE id="LwSKBK" name="Parameters.h" compile="0" resource="0" file="Source/Parameters.h"/>
+      <FILE id="nu4psR" name="ScopedMixer.h" compile="0" resource="0" file="Source/ScopedMixer.h"/>
+    </GROUP>
     <GROUP id="{D4696241-595E-955A-D992-515CB0C733B0}" name="Source">
       <FILE id="m6KWcA" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>

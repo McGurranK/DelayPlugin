@@ -3,49 +3,8 @@
 
 #include <JuceHeader.h>
 #include "FifoGUIBuffer.h"
-
-template <class SampleType>
-class ScopedReplacingContextMixer final
-{
-public:
-    explicit ScopedReplacingContextMixer (juce::AudioBuffer<SampleType>& OutputBufferRef, juce::dsp::DryWetMixer<SampleType>& MixerRef)
-        : outputBuffer (OutputBufferRef)
-        , mixerDSPRef (MixerRef)
-    {
-        juce::dsp::AudioBlock<SampleType> inputBlock { outputBuffer };
-        mixerDSPRef.pushDrySamples (inputBlock);
-    }
-    
-    ~ScopedReplacingContextMixer()
-    {
-        juce::dsp::AudioBlock<SampleType> outputBlock { outputBuffer };
-        mixerDSPRef.mixWetSamples (outputBlock);
-    }
-    
-private:
-    juce::AudioBuffer<SampleType>& outputBuffer;
-    juce::dsp::DryWetMixer<SampleType>& mixerDSPRef;
-};
-
-
-struct ParametersStucture
-{
-    ParametersStucture (juce::AudioProcessor& ProcesorRef)
-    {
-        delayTime = new juce::AudioParameterFloat("DT", "Delay Time", juce::NormalisableRange<float> (1.f, 48000.f), 2000.f);
-        delayFeedback = new juce::AudioParameterFloat("FB", "Delay Feedback", juce::NormalisableRange<float> (0.f, 1.f), 0.5f);
-        mix = new juce::AudioParameterFloat("mix", "Wet & Dry Mix", juce::NormalisableRange<float> (0.f, 1.f), 0.5f);
-        
-        ProcesorRef.addParameter (delayTime);
-        ProcesorRef.addParameter (delayFeedback);
-        ProcesorRef.addParameter (mix);
-    }
-    
-    juce::RangedAudioParameter* delayTime;
-    juce::RangedAudioParameter* delayFeedback;
-    juce::RangedAudioParameter* mix;
-};
-
+#include "Parameters.h"
+#include "ScopedMixer.h"
 
 class DelayPluginAudioProcessor : public juce::AudioProcessor
 {
