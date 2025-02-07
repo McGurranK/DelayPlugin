@@ -162,9 +162,8 @@ void DelayPluginAudioProcessor::getStateInformation (juce::MemoryBlock& destData
         const auto parameterName = parameter->paramID;
         auto parameterValue = parameter->getValue();
         const auto range = parameter->getNormalisableRange();
-        parameterValue = range.convertFrom0to1 (parameterValue);
         
-        const auto parameterValueString = juce::String(parameterValue);
+        const auto parameterValueString = parameter->getText(parameterValue, 5);
         
         auto state = stateXML.createNewChildElement(parameterName);
         state->setAttribute ("Value" , parameterValueString);
@@ -187,8 +186,17 @@ void DelayPluginAudioProcessor::setStateInformation (const void* data, int sizeI
             const auto parameterName = parameter->getTagName();
             const auto parameterText = parameter->getStringAttribute (str);
             
-            // Check name for parameters & set value
-            
+            for (auto& parameters : { params.delayTime, params.delayFeedback, params.mix})
+            {
+                 if (parameters->getParameterID().equalsIgnoreCase (parameterName))
+                 {
+                     auto realParameterValue = parameters->getValueForText (parameterText);
+                     parameters->setValue (realParameterValue);
+                     
+                     break;
+                 }
+            }
+ 
             parameter = parameter->getNextElement();
         }
     }
