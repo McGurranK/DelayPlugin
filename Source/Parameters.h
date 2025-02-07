@@ -17,7 +17,11 @@ struct ParametersStucture
         ProcesorRef.addParameter (mix);
     }
     
-    juce::RangedAudioParameter* delayTime;
-    juce::RangedAudioParameter* delayFeedback;
-    juce::RangedAudioParameter* mix;
+    juce::RangedAudioParameter* delayTime { nullptr };
+    juce::RangedAudioParameter* delayFeedback { nullptr };
+    juce::RangedAudioParameter* mix { nullptr };
+
+private:
+    
+    JUCE_LEAK_DETECTOR (ParametersStucture)
 };
