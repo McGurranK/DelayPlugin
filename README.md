@@ -1,6 +1,6 @@
 # Not another delay plugin
 
-I agree, everyone and there dad has a delay plugin these days... but I wanted to fix a very old and to be honest BAD juce project into just something simple and straight forward and have a look at writing some state loading/ custom UI code. To be honest, it has been thrown together and there area some issues that I will ammend when I get time.
+I agree, everyone and there dad has a delay plugin these days... but I wanted to fix a very old and to be honest BAD juce project into just something simple and straight forward. While writing some state loading/ custom UI code. To be honest, it has been thrown together and there are some issues that I will ammend when I get time.
 
 # What's makes this different from other delays?
 
