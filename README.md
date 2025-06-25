@@ -1,23 +1,33 @@
-# Not another delay plugin
+# Another Delay Plugin?
 
-I agree, everyone and there dad has a delay plugin these days... but I wanted to fix a very old and to be honest BAD juce project into just something simple and straight forward. While writing some state loading/ custom UI code. To be honest, it has been thrown together and there are some issues that I will ammend when I get time.
+Yes, yet another delay plugin — rebuilt using JUCE DSP to revamp an old project and introduce some eye-catching visualizations.
 
-# What's makes this different from other delays?
+## Current Progress
 
-Nothing, just an excercise in using juce and a little bit of a playground for messing with delays.
+- ✅ Custom visualizations implemented
+- ✅ Initial GUI setup complete
+- ⬜ Buffering code unit testing pending
+- ⬜ Accessibility improvements for the UI
+- ⬜ Comprehensive UI visual redesign
 
-# Accessibility
+## Building Instructions
 
-I will look into adding it simply when I finalise this plugin.
+### Using Projucer
 
-# Building
+1. Build JUCE’s Projucer from the `extras` folder.
+2. Open `DelayPlugin.jucer` in Projucer.
+3. Export and open the project in Visual Studio (Windows) or Xcode (macOS).
+4. Build a release version of the plugin.
 
-- Based on JUCE with a JUCER build setup and JUCE as a submodule in the repo.
-- Open in either Visual Studio or Xcode (I've built in XCode, so let me know if you have any issues).
-- Build the plugin, which should throw istelf into VST3 folder.
-- (MacOs) Ensure you have privledges changed so you are able to copy into your plugin folder.
-- Ps, Any issues let me know.
+### Using CMake
 
-# Why no Installers?
+1. Clone the repository with all submodules initialized (`git clone --recurse-submodules`).
+2. Open a terminal in the project directory.
+3. Run `cmake -B Build` to generate the build files.
+4. Build the project using your preferred build system (e.g., `make` or open the generated IDE project).
 
-It's something I could do in the future, but I would want to do it the right way and have it signed. I don't trust companies that don't sign their binaries, and it can be a massive headache dealing with both OS signing. Also, I deal with installers in my day job and depending on how custom you want to go it can be a heavy chunk of work. 
+## Roadmap
+
+- Refine and polish the UI for a modern, attractive look
+- Implement full accessibility support for the interface
+- Complete unit testing on buffering and core DSP components  
